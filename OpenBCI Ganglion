@@ -1,0 +1,52 @@
+Open powershell as administrator
+In Powershell type the following hitting enter after entering each command:
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object        System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+choco install nodejs
+choco install miniconda
+choco install miniconda3
+choco install vcbuildtools
+
+Go to:
+https://github.com/NeurotechBerkeley/bci-course/tree/master
+Click clone or download and download zip file
+After unzipping the file move the lab 3 folder to a an easy to find location
+Doing this will be useful later
+
+Insert the dongle
+Install Zadig and use it to get a proper driver for the dongle
+https://zadig.akeo.ie/
+
+Now open anaconda powershell prompt
+Navigate to the lab three file in powershell using
+cd "file address"
+Note, copy the file address and paste in in the quotes
+Run the following:
+npm install
+pip install -r requirements.txt
+pip install muselsl
+Pip install vispy
+Pip install PyQt5
+Pip install pyautogui
+Pip install pylsl
+
+You now have everything you need to connect to and stream data from the ganglion
+The prior steps need only be completed once
+
+To turn on the ganglion plug in the battery pack and flip the power switch next to the battery port
+
+To connect to the ganglion, in anaconda powershell prompt type:
+node ganglion-lsl.js
+
+To view the data streaming from the Ganglion, in a second anaconda powershell prompt type:
+Muselsl view -v2
+
+You should now see a graph of the data
+Now time to connect the electrodes
+The pins are divided into eight labeled groups of two
+The top pin of each group will record from the muscle the connected electrode is connected to
+The bottom pin represents the reference electrode for the top one, connect it to something that does not give an electrical signal like a bone
+Only four pin sets should have electrodes connected; R3, R5, R7, and R6
+
+You should now be seeing raw data from the electrodes
+How to work with this data will be explained in a seperate document.
+You should now
