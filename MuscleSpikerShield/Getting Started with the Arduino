@@ -1,0 +1,14 @@
+Getting Started with the Arduino:
+
+Note: The Muscle Spiker Shield is only compatible with the Arduino Uno.
+
+1. Place the Muscle Spiker Shield on the Arduino Uno in the correct configuration (this configuration is pretty intuitive).
+2. Connect the Arduino to your computer and open the Arduino IDE.
+3. File >> Save As >> {File Name}
+4. Tools >> Board >> Select "Arduino/Genuino Uno"
+5. Make sure power light is bright on the Arduino.
+6. Write your code! For more info, see the "Coding" document.
+7. Press the right hand arrow at the top of the software to upload your code to the Arduino.
+You could also click the check mark to verify your code doesnt not have any errors before uploading.
+8. That's it!
+
