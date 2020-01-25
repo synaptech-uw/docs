@@ -1,6 +1,6 @@
 Open powershell as administrator
 In Powershell type the following hitting enter after entering each command:
-Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object        System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 choco install nodejs
 choco install miniconda
 choco install miniconda3
