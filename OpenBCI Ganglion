@@ -15,6 +15,8 @@ Doing this will be useful later
 Insert the dongle
 Install Zadig and use it to get a proper driver for the dongle
 https://zadig.akeo.ie/
+Once Zadig is installed install a dummy driver with an arbitray name and the id code 04D8 FA2E, ignore the third box.
+Once that is completed use the drop down menu to replace the dummy driver with the one for the csr dongle.
 
 Now open anaconda powershell prompt
 Navigate to the lab three file in powershell using
