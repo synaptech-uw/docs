@@ -23,6 +23,7 @@ Navigate to the lab three file in powershell using
 cd "file address"
 Note, copy the file address and paste in in the quotes
 Run the following:
+npm config set msvs_version 2015 --global
 npm install
 pip install -r requirements.txt
 pip install muselsl
