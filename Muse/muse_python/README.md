@@ -7,13 +7,14 @@ Using Muse headset to control the dinosaur game www.chromedino.com in chrome:
 3. Install [BlueMuse](https://github.com/kowalej/BlueMuse/tree/master/Dist)
 	3.1 Unzip folder
 	3.2 Right click on InstallBlueMuse.ps1 and choose "Run with Powershell"
-	3.3 Powershell will lead you through prompts. You will need to turn on developer mode (maybe turn that off after you're done here). 
-4. ```Muselsl list -b bgapi``` to connect muse headset to the computer 
+	3.3 Powershell will lead you through prompts. You will need to turn on developer mode (maybe turn that off after you're done here. Or not). 
+4. In anaconda prompt: ```Muselsl list -b bgapi``` to connect muse headset to the computer 
 5. ```muselsl stream -b bgapi -a 00:55:DA:B3:81:73```
 6. Download blinks folder and extract it somewhere on the computer
 	- blinks.py
 	- utils.py
 	- blinkFilter.py
+7. If you want to look at the files, Anaconda should have also installed Jupyter notebook. To open jupyter, launch anaconda navigator, then launch jupyter. From there you can navigate to where you downloaded blinks. Look at the code!
 8. In new anaconda prompt, navigate to the blinks folder
 9. ```pip install pyautogui```
 10. ```python blinks.py```  
