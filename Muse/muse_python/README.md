@@ -18,17 +18,10 @@ Using Muse headset to control the [dinosaur game](www.chromedino.com) in chrome:
 8. In new anaconda prompt, navigate to the blinks folder
 9. Still in the anaconda prompt: ```pip install pyautogui```
 10. ```python blinks.py```
+	Now it should work! Navigate to [www.chromedino.com](www.chromedino.com) and play! You may have to adjust the threshold inside of blinks.py if it's not working well. 
 
-
-##MuseLab - look at the data being streamed!
-
-
+## Helpful notes
 Our muse address: 00:55:DA:B3:81:73
 
 To record data, connect muse and then run
-```muselsl record --duration 60```
-
-
-Project resources:
-https://github.com/urish/eeg-explorer
-                                                          
+```muselsl record --duration 60```                  
