@@ -6,6 +6,7 @@ A compilation of resources, tutorials, and projects using the Muse headset.
 
 How does the headset work? What tools do we have available? 
 https://blog.adafruit.com/2018/04/23/muse-eeg-utilities-for-capture-conversion-and-visualization-of-brain-waves/
+https://eegedu.com/
 
 ## Muse + Python
 
