@@ -21,7 +21,7 @@ from blinkFilter import filt
 from scipy import signal
 import pyautogui # for spacebar
 import datetime
-
+import MoveCursor as m
 # Handy little enum to make code more readable
 
 
@@ -60,6 +60,7 @@ if __name__ == "__main__":
     """ 1. CONNECT TO EEG STREAM """
 
     # Search for active LSL streams
+    new_cursor = m.MoveCursor()
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
     if len(streams) == 0:
@@ -137,6 +138,7 @@ if __name__ == "__main__":
                 newTime = datetime.datetime.now()
                 if (newTime - oldTime).total_seconds()*1000 > DELTA:
                     print('blink')  
+                    new_cursor.action("L")
                 oldTime = newTime
             #    pyautogui.press("space")
      
