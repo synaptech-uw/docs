@@ -50,7 +50,7 @@ SHIFT_LENGTH = EPOCH_LENGTH - OVERLAP_LENGTH
 
 # Index of the channel(s) (electrodes) to be used
 # 0 = left ear, 1 = left forehead, 2 = right forehead, 3 = right ear
-INDEX_CHANNEL = [1]
+INDEX_CHANNEL = [2]
 
 # Time difference between blink detection in ms
 DELTA = 110
@@ -138,7 +138,7 @@ if __name__ == "__main__":
                 if (newTime - oldTime).total_seconds()*1000 > DELTA:
                     print('blink')  
                 oldTime = newTime
-            #    pyautogui.press("space")
+                #pyautogui.press("space")
      
     except KeyboardInterrupt:
         print('Closing!')
