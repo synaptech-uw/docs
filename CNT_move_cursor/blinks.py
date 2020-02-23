@@ -223,7 +223,7 @@ if __name__ == "__main__":
     filter_state_left = None  # for use with the notch filter
     filter_state_right = None  # for use with the notch filter
 
-    plot()
+    # plot()
 
     # Compute the number of epochs in "buffer_length"
     n_win_test = int(np.floor((BUFFER_LENGTH - EPOCH_LENGTH) /
@@ -245,11 +245,11 @@ if __name__ == "__main__":
     left_thresh, right_thresh, left_delay, right_delay = calibrate(3)
 
     #normalize delay
-    left_delay = left_delay * 85
-    right_delay = right_delay * 40
+    left_delay = left_delay * 40 + 100
+    right_delay = right_delay * 30 + 70
 
-    print("left_thresh: %d   right_thresh: %d", left_thresh, right_thresh)
-    print("left_delay: %d   right_delay: %d", left_delay, right_delay)
+    print("left_thresh: %d   right_thresh: %d" % (left_thresh, right_thresh))
+    print("left_delay: %d   right_delay: %d" % (left_delay, right_delay))
     input()
 
     try:
@@ -324,7 +324,7 @@ if __name__ == "__main__":
             #    pyautogui.press("space")
 
 
-            print("L: %3.1d   R: %3.1d" % (maxMatchL, maxMatchR))
+            print("L: %3d   R: %3d" % (maxMatchL, maxMatchR))
 
 
      
