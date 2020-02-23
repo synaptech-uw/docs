@@ -134,11 +134,11 @@ if __name__ == "__main__":
             maxMatch = np.max(matchesAbs)/1e5
             print(maxMatch)
 
-            if maxMatch > 10.5:
+            if maxMatch > 3.5:
                 newTime = datetime.datetime.now()
                 if (newTime - oldTime).total_seconds()*1000 > DELTA:
                     print('blink')  
-                    new_cursor.action("R")
+                    #new_cursor.action("R")
                 oldTime = newTime
             #    pyautogui.press("space")
      
