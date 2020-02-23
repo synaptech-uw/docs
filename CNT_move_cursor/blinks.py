@@ -22,8 +22,10 @@ from scipy import signal
 import pyautogui # for spacebar
 import datetime
 import MoveCursor as m
+import time
 # Handy little enum to make code more readable
 
+pyautogui.PAUSE = 0.01                      # Make sure there is no delay between consecutive values when the autogui library is used
 
 class Band:
     Delta = 0
@@ -54,7 +56,16 @@ INDEX_CHANNEL_LEFT = [1]
 INDEX_CHANNEL_RIGHT = [2]
 
 # Time difference between blink detection in ms
-DELTA = 110
+DELTA = 200
+
+def stopwatch(seconds):
+    start = time.time()
+    time.clock()
+    elapsed = 0
+    while elapsed < seconds:
+        elapsed = time.time() - start
+        time.sleep(1)
+
 
 if __name__ == "__main__":
 
@@ -103,7 +114,51 @@ if __name__ == "__main__":
     # The try/except structure allows to quit the while loop by aborting the
     # script with <Ctrl-C>
     print('Press Ctrl-C in the console to break the while loop.')
-    oldTime = datetime.datetime.now() # initialize time delta
+    oldTimeL = datetime.datetime.now() # initialize time delta
+    oldTimeR = datetime.datetime.now() # initialize time delta
+
+    print('---- Calibrating now - Please dont blink for next 3 seconds ------------------')
+    start = time.time()
+    time.clock()
+    elapsed = 0
+    totalvalue = 0
+    totaltimes = 0
+    while elapsed < 3:
+        print("***")
+        elapsed = time.time() - start
+        totaltimes = totaltimes + 1
+        # Obtain EEG data from the LSL stream
+        eeg_data, timestamp = inlet.pull_chunk(
+            timeout=1, max_samples=int(SHIFT_LENGTH * fs))
+
+        # Only keep the channel we're interested in
+        ch_data = np.array(eeg_data)[:, INDEX_CHANNEL_LEFT]
+
+        # Update EEG buffer with the new data
+        eeg_buffer_left, filter_state_left = utils.update_buffer(
+            eeg_buffer_left, ch_data, notch=True,
+            filter_state=filter_state_left)
+
+        """ 3.2 COMPUTE BAND POWERS """
+        # Get newest samples from the buffer
+        data_epoch = utils.get_last_data(eeg_buffer_left,
+                                         int(EPOCH_LENGTH * fs))
+        #print(data_epoch.shape)
+
+        matchFilt = signal.hilbert(filt)
+
+        matches = signal.correlate(matchFilt,data_epoch[:,0])
+
+        matchesAbs = np.abs(matches[:])
+
+        maxMatch = np.max(matchesAbs)/1e5
+        totalvalue = totalvalue + maxMatch
+
+    averagedValue = totalvalue / totaltimes
+    print("Averaged Value :")
+    print(averagedValue)
+
+    print('----------------- Calibration done- Now you can mind control the cursor --------------------')
 
     try:
         # The following loop acquires data, computes band powers, and calculates neurofeedback metrics based on those band powers
@@ -134,18 +189,18 @@ if __name__ == "__main__":
             matchesAbs = np.abs(matches[:])
 
             maxMatch = np.max(matchesAbs)/1e5
-            print(maxMatch)
+            #print(maxMatch)
 
-            if maxMatch > 10.5:
+            if maxMatch > averagedValue + 1.5:
                 newTime = datetime.datetime.now()
-                if (newTime - oldTime).total_seconds()*1000 > DELTA:
-                    print('LEFT')  
-                    new_cursor.action("L")
-                oldTime = newTime
+                if (newTime - oldTimeL).total_seconds()*1000 > DELTA:
+                    print('selector')  
+                    new_cursor.start_action("L")
+                oldTimeL = newTime
             #    pyautogui.press("space")
 
             #-------------------------------------------------------------
-
+            
             # Only keep the channel we're interested in
             ch_data = np.array(eeg_data)[:, INDEX_CHANNEL_RIGHT]
 
@@ -154,7 +209,7 @@ if __name__ == "__main__":
                 eeg_buffer_right, ch_data, notch=True,
                 filter_state=filter_state_right)
 
-            """ 3.2 COMPUTE BAND POWERS """
+            # 3.2 COMPUTE BAND POWERS
             # Get newest samples from the buffer
             data_epoch = utils.get_last_data(eeg_buffer_right,
                                              int(EPOCH_LENGTH * fs))
@@ -168,13 +223,14 @@ if __name__ == "__main__":
 
             maxMatch = np.max(matchesAbs)/1e5
             print(maxMatch)
-            if maxMatch > 10.5:
+            if maxMatch > averagedValue + 1.5:
                 newTime = datetime.datetime.now()
-                if (newTime - oldTime).total_seconds()*1000 > DELTA:
-                    print('RIGHT')  
-                    new_cursor.action("R")
-                oldTime = newTime
+                if (newTime - oldTimeR).total_seconds()*1000 > DELTA:
+                    print('executor')  
+                    new_cursor.start_action("R")
+                oldTimeR = newTime
             #    pyautogui.press("space")
+            
 
      
     except KeyboardInterrupt:

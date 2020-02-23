@@ -23,13 +23,13 @@ class MoveCursor:
             curr_dir = self._direction_list[self._current_dir_index]
             print("going " + curr_dir)
             if curr_dir == "Up":
-                move.moveRel(0, -25, duration = 0.01)
+                move.moveRel(0, -100, duration = 0.2)
             elif curr_dir == "Down":
-                move.moveRel(0, 25, duration = 0.01)
+                move.moveRel(0, 100, duration = 0.2)
             elif curr_dir == "Left":
-                move.moveRel(-25, 0, duration = 0.01)
+                move.moveRel(-100, 0, duration = 0.2)
             else:
-                move.moveRel(25, 0, duration = 0.01)
+                move.moveRel(100, 0, duration = 0.2)
 
     def start_action(self, command):
         thread = Thread(target = self.action, args = (command, ))
