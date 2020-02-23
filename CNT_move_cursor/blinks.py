@@ -189,7 +189,7 @@ if __name__ == "__main__":
             matchesAbs = np.abs(matches[:])
 
             maxMatch = np.max(matchesAbs)/1e5
-            #print(maxMatch)
+            maxMatchL = maxMatch
 
             if maxMatch > averagedValue + 1.5:
                 newTime = datetime.datetime.now()
@@ -222,7 +222,7 @@ if __name__ == "__main__":
             matchesAbs = np.abs(matches[:])
 
             maxMatch = np.max(matchesAbs)/1e5
-            print(maxMatch)
+            maxMatchR = maxMatch
             if maxMatch > averagedValue + 1.5:
                 newTime = datetime.datetime.now()
                 if (newTime - oldTimeR).total_seconds()*1000 > DELTA:
@@ -230,7 +230,10 @@ if __name__ == "__main__":
                     new_cursor.start_action("R")
                 oldTimeR = newTime
             #    pyautogui.press("space")
-            
+
+
+            print("L: %3.1d   R: %3.1d" % (maxMatchL, maxMatchR))
+
 
      
     except KeyboardInterrupt:
