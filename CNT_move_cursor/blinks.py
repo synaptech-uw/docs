@@ -15,6 +15,7 @@ Adapted from https://github.com/NeuroTechX/bci-workshop
 
 import numpy as np  # Module that simplifies computations on matrices
 import matplotlib.pyplot as plt  # Module used for plotting
+import matplotlib.animation as animation
 from pylsl import StreamInlet, resolve_byprop  # Module to receive EEG data
 import utils  # Our own utility functions
 from blinkFilter import filt
@@ -33,6 +34,11 @@ class Band:
     Theta = 1
     Alpha = 2
     Beta = 3
+
+class Buffers:
+    timestamp_buffer = None
+    eeg_buffer = {}
+    filter_state = None
 
 
 """ EXPERIMENTAL PARAMETERS """
@@ -134,6 +140,54 @@ def calibrate(rep):
             np.average(maxMatchesLength[0, :]), \
             np.average(maxMatchesLength[1, :])
 
+def live_plot(i, buff, ax, channel, update=False):
+    if update:
+        eeg_data, timestamp = inlet.pull_chunk(
+            timeout=1, max_samples=int(SHIFT_LENGTH * fs))
+
+        ch_data_left = np.array(eeg_data)[:, INDEX_CHANNEL_LEFT]
+        ch_data_right = np.array(eeg_data)[:, INDEX_CHANNEL_RIGHT]
+        timestamp = np.reshape(timestamp, (len(timestamp), 1))
+
+
+        buff.eeg_buffer[str(INDEX_CHANNEL_LEFT)], filter_state = utils.update_buffer(
+            buff.eeg_buffer[str(INDEX_CHANNEL_LEFT)], ch_data_left)
+        buff.eeg_buffer[str(INDEX_CHANNEL_RIGHT)], filter_state = utils.update_buffer(
+            buff.eeg_buffer[str(INDEX_CHANNEL_RIGHT)], ch_data_right)
+        buff.timestamp_buffer, _ = utils.update_buffer(
+            buff.timestamp_buffer, timestamp)
+
+    xs = (buff.timestamp_buffer)
+    ys = (buff.eeg_buffer[str(channel)])
+
+    xs = xs[-500:]
+    ys = ys[-500:]
+
+    ax.clear()
+    ax.set_ylim(-3000, 3000)
+    ax.plot(xs, ys)
+
+    plt.subplots_adjust(bottom=0.30)
+
+def plot():
+    buff = Buffers()
+
+    buff.eeg_buffer[str(INDEX_CHANNEL_LEFT)] = np.zeros((int(fs * BUFFER_LENGTH), 1))
+    buff.eeg_buffer[str(INDEX_CHANNEL_RIGHT)] = np.zeros((int(fs * BUFFER_LENGTH), 1))
+    buff.timestamp_buffer = np.zeros((int(fs * BUFFER_LENGTH), 1))
+    buff.filter_state = None
+
+    fig = plt.figure(1)
+    ax = fig.add_subplot(1, 1, 1)
+
+    fig2 = plt.figure(2)
+    ax2 = fig2.add_subplot(1, 1, 1)
+
+    animL = animation.FuncAnimation(fig, live_plot,
+            fargs=(buff, ax, INDEX_CHANNEL_LEFT,True,), interval=1)
+#    animR = animation.FuncAnimation(fig2, live_plot,
+#           fargs=(buff, ax2, INDEX_CHANNEL_RIGHT,), interval=1)
+    plt.show()
 
 if __name__ == "__main__":
 
@@ -168,6 +222,8 @@ if __name__ == "__main__":
     eeg_buffer_right = np.zeros((int(fs * BUFFER_LENGTH), 1))
     filter_state_left = None  # for use with the notch filter
     filter_state_right = None  # for use with the notch filter
+
+    plot()
 
     # Compute the number of epochs in "buffer_length"
     n_win_test = int(np.floor((BUFFER_LENGTH - EPOCH_LENGTH) /
