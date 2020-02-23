@@ -1,15 +1,18 @@
 import pyautogui as move
+from threading import Thread
 
 class MoveCursor:
+
 
     def __init__(self):
         super().__init__()
         self._direction_list = ["Up", "Down", "Left", "Right"]
         self._current_dir_index = -1
         self._command = ""
+        self.threads = []
 
     def action(self, command):
-        
+
         self._command = command
         if self._command == "L":
             self._current_dir_index += 1
@@ -28,12 +31,16 @@ class MoveCursor:
             else:
                 move.moveRel(25, 0, duration = 0.25)
 
+    def start_action(self, command):
+        thread = Thread(target = self.action, args = (command, ))
+        thread.start()
+
 #cursor = MoveCursor()
 #cursor.action("L")
 #cursor.action("L")
 #cursor.action("L")
 #cursor.action("L")
-#cursor.action("R")
+#cursor.start_action("R")
 #cursor.action("R")
 #cursor.action("L")
 #cursor.action("R")
