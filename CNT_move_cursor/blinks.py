@@ -67,6 +67,54 @@ def stopwatch(seconds):
         time.sleep(1)
 
 
+def calibrate(buffer, filter_state):
+    print('---- Calibrating now - Please dont blink for next 3 seconds ------------------')
+    start = time.time()
+    time.clock()
+    elapsed = 0
+    totalvalue = 0
+    totaltimes = 0
+    eeg_buffer_left = buffer
+    filter_state_left = filter_state
+    while elapsed < 3:
+        print("***")
+        elapsed = time.time() - start
+        totaltimes = totaltimes + 1
+        # Obtain EEG data from the LSL stream
+        eeg_data, timestamp = inlet.pull_chunk(
+            timeout=1, max_samples=int(SHIFT_LENGTH * fs))
+
+        # Only keep the channel we're interested in
+        ch_data = np.array(eeg_data)[:, INDEX_CHANNEL_LEFT]
+
+        # Update EEG buffer with the new data
+        eeg_buffer_left, filter_state_left = utils.update_buffer(
+            eeg_buffer_left, ch_data, notch=True,
+            filter_state=filter_state_left)
+
+        """ 3.2 COMPUTE BAND POWERS """
+        # Get newest samples from the buffer
+        data_epoch = utils.get_last_data(eeg_buffer_left,
+                                         int(EPOCH_LENGTH * fs))
+        #print(data_epoch.shape)
+
+        matchFilt = signal.hilbert(filt)
+
+        matches = signal.correlate(matchFilt,data_epoch[:,0])
+
+        matchesAbs = np.abs(matches[:])
+
+        maxMatch = np.max(matchesAbs)/1e5
+        totalvalue = totalvalue + maxMatch
+
+    averagedValue = totalvalue / totaltimes
+    print("Averaged Value :")
+    print(averagedValue)
+
+    print('----------------- Calibration done- Now you can mind control the cursor --------------------')
+    return averagedValue
+
+
 if __name__ == "__main__":
 
     """ 1. CONNECT TO EEG STREAM """
@@ -117,48 +165,8 @@ if __name__ == "__main__":
     oldTimeL = datetime.datetime.now() # initialize time delta
     oldTimeR = datetime.datetime.now() # initialize time delta
 
-    print('---- Calibrating now - Please dont blink for next 3 seconds ------------------')
-    start = time.time()
-    time.clock()
-    elapsed = 0
-    totalvalue = 0
-    totaltimes = 0
-    while elapsed < 3:
-        print("***")
-        elapsed = time.time() - start
-        totaltimes = totaltimes + 1
-        # Obtain EEG data from the LSL stream
-        eeg_data, timestamp = inlet.pull_chunk(
-            timeout=1, max_samples=int(SHIFT_LENGTH * fs))
+    averagedValue = calibrate(eeg_buffer_left, filter_state_left)
 
-        # Only keep the channel we're interested in
-        ch_data = np.array(eeg_data)[:, INDEX_CHANNEL_LEFT]
-
-        # Update EEG buffer with the new data
-        eeg_buffer_left, filter_state_left = utils.update_buffer(
-            eeg_buffer_left, ch_data, notch=True,
-            filter_state=filter_state_left)
-
-        """ 3.2 COMPUTE BAND POWERS """
-        # Get newest samples from the buffer
-        data_epoch = utils.get_last_data(eeg_buffer_left,
-                                         int(EPOCH_LENGTH * fs))
-        #print(data_epoch.shape)
-
-        matchFilt = signal.hilbert(filt)
-
-        matches = signal.correlate(matchFilt,data_epoch[:,0])
-
-        matchesAbs = np.abs(matches[:])
-
-        maxMatch = np.max(matchesAbs)/1e5
-        totalvalue = totalvalue + maxMatch
-
-    averagedValue = totalvalue / totaltimes
-    print("Averaged Value :")
-    print(averagedValue)
-
-    print('----------------- Calibration done- Now you can mind control the cursor --------------------')
 
     try:
         # The following loop acquires data, computes band powers, and calculates neurofeedback metrics based on those band powers
@@ -238,4 +246,3 @@ if __name__ == "__main__":
      
     except KeyboardInterrupt:
         print('Closing!')
-
