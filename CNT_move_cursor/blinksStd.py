@@ -332,7 +332,6 @@ if __name__ == "__main__":
                     #print("Left eye blink" + str(sd))
                     newTime = datetime.datetime.now()
                     if (newTime - oldTimeL).total_seconds()*1000 > 150:
-                        print('executor')  
                         new_cursor.movement = False
                         new_cursor.start_action("L")
                     oldTimeL = newTime
@@ -357,7 +356,6 @@ if __name__ == "__main__":
                     #print("Right eye blink" + str(sd))
                     newTime = datetime.datetime.now()
                     if (newTime - oldTimeR).total_seconds()*1000 > 100:
-                        print('executor')  
                         new_cursor.movement = True if not new_cursor.movement else False
                         new_cursor.start_action("R")
                     oldTimeR = newTime

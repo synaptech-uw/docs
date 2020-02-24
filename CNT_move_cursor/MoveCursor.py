@@ -59,11 +59,8 @@ class MoveCursor:
             if self._current_dir_index > 4:
                 self._current_dir_index = 0
             self.update_direction(self._current_dir_index)
-            print("Direction Set:" + self._direction_list[self._current_dir_index])
         if self._command == "R":
             curr_dir = self._direction_list[self._current_dir_index]
-            print("going " + curr_dir)
-            print(str(self.movement))
             while(self.movement): #Now start moving the cursor from pause
                 if curr_dir == "Up":
                     move.moveRel(0, -30, duration = 0.005)
@@ -81,14 +78,6 @@ class MoveCursor:
     def start_action(self, command):
         thread = Thread(target = self.action, args = (command, ))
         thread.start()
-
-    def move(self, command):
-        if self.movement:
-            print("Setting to false in move")
-            self.movement = False
-        else:
-            self.movement = True
-            start_action(command)
 
 
 
