@@ -19,16 +19,18 @@ class MoveCursor:
         self.draw(-1)
 
     def check_direction(self):
-        for a in self.arrows:
-            a.setFill('blue')
-        if self._current_dir_index != -1:
-            self.arrows[self._current_dir_index].setFill('yellow')
+        for i in range(len(self.arrows)):
+            if i == self._current_dir_index:
+                self.arrows[i].setFill('yellow')
+            else:
+                self.arrows[i].setFill('blue')
 
     def update_direction(self, idx):
-        for a in self.arrows:
-            a.setFill('blue')
-        if idx != -1:
-            self.arrows[idx].setFill('yellow')
+        for i in range(len(self.arrows)):
+            if i == idx:
+                self.arrows[i].setFill('yellow')
+            else:
+                self.arrows[i].setFill('blue')
 
     def draw(self, idx):
         up_arrow = Polygon([Point(WIDTH/2, 0), Point(WIDTH/2-TRIANGLE_SIZE, TRIANGLE_SIZE),
