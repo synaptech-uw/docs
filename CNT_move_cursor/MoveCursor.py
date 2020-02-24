@@ -10,13 +10,14 @@ class MoveCursor:
 
     def __init__(self):
         super().__init__()
-        self._direction_list = ["Up", "Down", "Left", "Right"]
-        self._current_dir_index = -1
+        self._direction_list = ["Up", "Right", "Down", "Left"]
+        self._current_dir_index = 3
         self._command = ""
         self.threads = []
         self.win = GraphWin("Direction", WIDTH, HEIGHT)
         self.arrows = []
-        self.draw(-1)
+        self.movement = False
+        self.draw(3)
 
     def check_direction(self):
         for i in range(len(self.arrows)):
@@ -42,7 +43,7 @@ class MoveCursor:
         right_arrow = Polygon([Point(WIDTH, WIDTH/2), Point(WIDTH-TRIANGLE_SIZE, WIDTH/2+TRIANGLE_SIZE),
             Point(WIDTH-TRIANGLE_SIZE, WIDTH/2-TRIANGLE_SIZE)])
 
-        self.arrows = [up_arrow, down_arrow, left_arrow, right_arrow]
+        self.arrows = [up_arrow, right_arrow, down_arrow, left_arrow]
         for a in self.arrows:
             a.setFill('blue')
             a.draw(self.win)
@@ -61,18 +62,30 @@ class MoveCursor:
         if self._command == "R":
             curr_dir = self._direction_list[self._current_dir_index]
             print("going " + curr_dir)
-            if curr_dir == "Up":
-                move.moveRel(0, -100, duration = 0.2)
-            elif curr_dir == "Down":
-                move.moveRel(0, 100, duration = 0.2)
-            elif curr_dir == "Left":
-                move.moveRel(-100, 0, duration = 0.2)
-            else:
-                move.moveRel(100, 0, duration = 0.2)
+            print(str(self.movement))
+            while(self.movement): #Now start moving the cursor from pause
+                if curr_dir == "Up":
+                    move.moveRel(0, -30, duration = 0.005)
+                elif curr_dir == "Down":
+                    move.moveRel(0, 30, duration = 0.005)
+                elif curr_dir == "Left":
+                    move.moveRel(-30, 0, duration = 0.005)
+                else:
+                    move.moveRel(30, 0, duration = 0.005)
 
     def start_action(self, command):
         thread = Thread(target = self.action, args = (command, ))
         thread.start()
+
+    def move(self, command):
+        if self.movement:
+            print("Setting to false in move")
+            self.movement = False
+        else:
+            self.movement = True
+            start_action(command)
+
+
 
 
 #cursor = MoveCursor()

@@ -25,6 +25,8 @@ import datetime
 import MoveCursor as m
 import time
 import _thread
+from mne.filter import create_filter
+from scipy.signal import lfilter, lfilter_zi
 # Handy little enum to make code more readable
 
 #pyautogui.PAUSE = 0.01                      # Make sure there is no delay between consecutive values when the autogui library is used
@@ -189,12 +191,48 @@ def plot():
 #           fargs=(buff, ax2, INDEX_CHANNEL_RIGHT,), interval=1)
     plt.show()
 
+def on_timer(   ):
+        """Add some data at the end of each signal (real-time signals)."""
+
+        samples, timestamps = inlet.pull_chunk(timeout=0.0, max_samples=100)
+        if timestamps:
+            samples = np.array(samples)[:, ::-1]
+
+            data = np.vstack([data, samples])
+            data = data[-n_samples :]
+            filt_samples, filt_state = lfilter(
+                bf, af, samples, axis=0, zi=filt_state
+            )
+            data_f = np.vstack([data_f, filt_samples])
+            data_f = data_f[-n_samples :]
+
+            if filt:
+                plot_data = data_f / scale
+            elif not filt:
+                plot_data = (data - data.mean(axis=0)) / scale
+
+            sd = np.std(plot_data[-int(sfreq) :], axis=0)[::-1] * scale
+            co = np.int32(np.tanh((sd - 30) / 15) * 5 + 5)
+
+
+            for ii in range(n_chans):
+                quality[ii].text = "%.2f" % (sd[ii])
+                quality[ii].color = quality_colors[co[ii]]
+                quality[ii].font_size = 3 + co[ii]
+
+                names[ii].font_size = 3 + co[ii]
+                names[ii].color = quality_colors[co[ii]]
+
+            program["a_position"].set_data(plot_data.T.ravel().astype(np.float32))
+            update()
+
 if __name__ == "__main__":
 
     """ 1. CONNECT TO EEG STREAM """
 
     # Search for active LSL streams
     new_cursor = m.MoveCursor()
+    new_cursor.draw(3)
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
     if len(streams) == 0:
@@ -241,6 +279,8 @@ if __name__ == "__main__":
     oldTimeL = datetime.datetime.now() # initialize time delta
     oldTimeR = datetime.datetime.now() # initialize time delta
 
+    """
+
     #calibrate
     left_thresh, right_thresh, left_delay, right_delay = calibrate(3)
 
@@ -252,81 +292,79 @@ if __name__ == "__main__":
     print("left_delay: %d   right_delay: %d" % (left_delay, right_delay))
     input()
 
+    """
+
+    n_samples = int(fs * 10) #10 is window size
+    data_fLeft = np.zeros((n_samples, 1))
+    data_fRight = np.zeros((n_samples, 1))
+    af = [1.0]
+    bf = create_filter(data_fLeft.T, fs, 3, 40.0, method = "fir") #do
+    zi = lfilter_zi(bf, af)
+    dataLeft = np.zeros((n_samples, 1))
+    dataRight = np.zeros((n_samples, 1))
+    filt_stateLeft = np.tile(zi, (1, 1)).transpose()
+    filt_stateRight = np.tile(zi, (1, 1)).transpose()
+    oldTimeL = datetime.datetime.now() # initialize time delta
+    oldTimeR = datetime.datetime.now() # initialize time delta
+
     try:
         # The following loop acquires data, computes band powers, and calculates neurofeedback metrics based on those band powers
         while True:
-            """ 3.1 ACQUIRE DATA """
-            # Obtain EEG data from the LSL stream
-            eeg_data, timestamp = inlet.pull_chunk(
-                timeout=1, max_samples=int(SHIFT_LENGTH * fs))
+            """Add some data at the end of each signal (real-time signals)."""
+            samples, timestamps = inlet.pull_chunk(timeout=0.0, max_samples=100)
+            new_cursor.check_direction()
+            if timestamps:
+                samplesLeft = np.array(samples)[:, INDEX_CHANNEL_LEFT]
+                dataLeft = np.vstack([dataLeft, samplesLeft])
+                dataLeft = dataLeft[-n_samples :]
+                filt_samples, filt_stateLeft = lfilter(
+                    bf, af, samplesLeft, axis=0, zi=filt_stateLeft)
+                data_fLeft = np.vstack([data_fLeft, filt_samples])
+                data_fLeft = data_fLeft[-n_samples :]
+                plot_data = data_fLeft / 500
+                
 
-            # Only keep the channel we're interested in
-            ch_data = np.array(eeg_data)[:, INDEX_CHANNEL_LEFT]
+                sd = np.std(plot_data[-int(fs) :], axis=0)[::-1] * 500 # 500 = scale
+                co = np.int32(np.tanh((sd - 30) / 15) * 5 + 5)
+        
 
-            # Update EEG buffer with the new data
-            eeg_buffer_left, filter_state_left = utils.update_buffer(
-                eeg_buffer_left, ch_data, notch=True,
-                filter_state=filter_state_left)
+                if(co > 1):
+                    #print("Left eye blink" + str(sd))
+                    newTime = datetime.datetime.now()
+                    if (newTime - oldTimeL).total_seconds()*1000 > 150:
+                        print('executor')  
+                        new_cursor.movement = False
+                        new_cursor.start_action("L")
+                    oldTimeL = newTime
 
-            """ 3.2 COMPUTE BAND POWERS """
-            # Get newest samples from the buffer
-            data_epoch = utils.get_last_data(eeg_buffer_left,
-                                             int(EPOCH_LENGTH * fs))
-            #print(data_epoch.shape)
+                # ----------------------
 
-            matchFilt = signal.hilbert(filt)
+                samplesRight = np.array(samples)[:, INDEX_CHANNEL_RIGHT]
+                dataRight = np.vstack([dataRight, samplesRight])
+                dataRight = dataRight[-n_samples :]
+                filt_samples, filt_stateRight = lfilter(
+                    bf, af, samplesRight, axis=0, zi=filt_stateRight)
+                data_fRight = np.vstack([data_fRight, filt_samples])
+                data_fRight = data_fRight[-n_samples :]
+                plot_data = data_fRight / 500
+                
 
-            matches = signal.correlate(matchFilt,data_epoch[:,0])
+                sd = np.std(plot_data[-int(fs) :], axis=0)[::-1] * 500 # 500 = scale
+                co = np.int32(np.tanh((sd - 30) / 15) * 5 + 5)
+        
 
-            matchesAbs = np.abs(matches[:])
-
-            maxMatch = np.max(matchesAbs)/1e5
-            maxMatchL = maxMatch
-
-            if maxMatch > left_thresh:
-                newTime = datetime.datetime.now()
-                if (newTime - oldTimeL).total_seconds()*1000 > left_delay:
-                    print('selector')  
-                    new_cursor.start_action("L")
-                oldTimeL = newTime
-            #    pyautogui.press("space")
-
-            #-------------------------------------------------------------
-            
-            # Only keep the channel we're interested in
-            ch_data = np.array(eeg_data)[:, INDEX_CHANNEL_RIGHT]
-
-            # Update EEG buffer with the new data
-            eeg_buffer_right, filter_state_right = utils.update_buffer(
-                eeg_buffer_right, ch_data, notch=True,
-                filter_state=filter_state_right)
-
-            # 3.2 COMPUTE BAND POWERS
-            # Get newest samples from the buffer
-            data_epoch = utils.get_last_data(eeg_buffer_right,
-                                             int(EPOCH_LENGTH * fs))
-            #print(data_epoch.shape)
-
-            matchFilt = signal.hilbert(filt)
-
-            matches = signal.correlate(matchFilt,data_epoch[:,0])
-
-            matchesAbs = np.abs(matches[:])
-
-            maxMatch = np.max(matchesAbs)/1e5
-            maxMatchR = maxMatch
-            if maxMatch > right_thresh:
-                newTime = datetime.datetime.now()
-                if (newTime - oldTimeR).total_seconds()*1000 > right_delay:
-                    print('executor')  
-                    new_cursor.start_action("R")
-                oldTimeR = newTime
-            #    pyautogui.press("space")
-
-
-            print("L: %3d   R: %3d" % (maxMatchL, maxMatchR))
-
-
+                if(co > 1):
+                    #print("Right eye blink" + str(sd))
+                    newTime = datetime.datetime.now()
+                    if (newTime - oldTimeR).total_seconds()*1000 > 100:
+                        print('executor')  
+                        new_cursor.movement = True if not new_cursor.movement else False
+                        new_cursor.start_action("R")
+                    oldTimeR = newTime
+                
      
     except KeyboardInterrupt:
         print('Closing!')
+
+
+
