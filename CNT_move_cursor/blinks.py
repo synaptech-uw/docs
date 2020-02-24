@@ -194,7 +194,6 @@ if __name__ == "__main__":
     """ 1. CONNECT TO EEG STREAM """
 
     # Search for active LSL streams
-    new_cursor = m.MoveCursor()
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
     if len(streams) == 0:
@@ -252,9 +251,13 @@ if __name__ == "__main__":
     print("left_delay: %d   right_delay: %d" % (left_delay, right_delay))
     input()
 
+    new_cursor = m.MoveCursor()
+    new_cursor.draw(1)
+
     try:
         # The following loop acquires data, computes band powers, and calculates neurofeedback metrics based on those band powers
         while True:
+            new_cursor.check_direction()
             """ 3.1 ACQUIRE DATA """
             # Obtain EEG data from the LSL stream
             eeg_data, timestamp = inlet.pull_chunk(
